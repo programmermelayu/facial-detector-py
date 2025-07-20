@@ -151,6 +151,10 @@ You should see `(venv)` at the beginning of your terminal prompt, indicating the
 4. **Install Required Python Libraries:**
 With the virtual environment activated, install the necessary libraries:
 
+```
+pip install Flask opencv-python numpy Flask-Cors
+```
+
 ## 5. Running the Application
 
 1. **Start the Python Flask Backend:**
@@ -178,4 +182,4 @@ This will load the `index.html` file served by your Flask backend.
 
 * **Expression Model (Placeholder):** The current Python backend uses a simple placeholder (random expression) for facial expression analysis. For real-world use, you would integrate a more advanced machine learning model (e.g., a deep learning model) to classify emotions from the detected face.
 
-* **Canvas Preview Simulation:** If you are viewing this `index.html` file within a sandboxed environment (like a code editor's live preview or an online canvas), the `Analyze Expression` button will **simulate** the result directly in JavaScript, as direct connections to `localhost` are usually blocked in such environments.
+
