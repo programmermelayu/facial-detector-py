@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facial Expression Detector</title>
+    <!-- Tailwind CSS CDN for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for Inter font and general layout */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8; /* Light blue-gray background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 1.5rem; /* More rounded corners */
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); /* Softer shadow */
+            padding: 2rem;
+            max-width: 500px; /* Max width for better control on larger screens */
+            width: 100%;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem; /* Spacing between sections */
+        }
+        video {
+            width: 100%; /* Make video responsive */
+            max-width: 400px; /* Limit max width as requested */
+            height: auto; /* Maintain aspect ratio */
+            border: 4px solid #3b82f6; /* Blue border */
+            border-radius: 1rem; /* Rounded video corners */
+            margin: 0 auto; /* Center the video */
+            background-color: #e2e8f0; /* Placeholder background for video */
+            display: block; /* Ensure it takes up its own line */
+        }
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 1rem; /* Space between buttons */
+            flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
+        }
+        button {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem; /* Rounded buttons */
+            font-weight: 600; /* Semi-bold text */
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Button shadow */
+        }
+        button:hover {
+            transform: translateY(-2px); /* Slight lift on hover */
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+        }
+        button:active {
+            transform: translateY(0); /* Press effect */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        #startButton {
+            background-color: #22c55e; /* Green for Start */
+            color: white;
+        }
+        #startButton:hover {
+            background-color: #16a34a; /* Darker green on hover */
+        }
+        #analyzeButton {
+            background-color: #3b82f6; /* Blue for Analyze */
+            color: white;
+        }
+        #analyzeButton:hover {
+            background-color: #2563eb; /* Darker blue on hover */
+        }
+        #resultDisplay {
+            margin-top: 1rem;
+            font-size: 1.5rem; /* Larger font for result */
+            font-weight: 700; /* Bold result text */
+            color: #1e293b; /* Darker text color */
+            min-height: 2rem; /* Ensure space even when empty */
+        }
+        .message-box {
+            background-color: #fff3cd; /* Light yellow background */
+            border: 1px solid #ffeeba; /* Yellow border */
+            color: #664d03; /* Dark yellow text */
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+            display: none; /* Hidden by default */
+            font-size: 0.9rem;
+        }
+        .message-box.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-3xl font-bold text-gray-800">Facial Expression Detector</h1>
+
+        <!-- Video element to display webcam feed -->
+        <video id="videoElement" autoplay playsinline></video>
+
+        <!-- Message box for user feedback -->
+        <div id="messageBox" class="message-box"></div>
+
+        <div class="button-group">
+            <button id="startButton" class="focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                Start Webcam
+            </button>
+            <button id="analyzeButton" class="focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" disabled>
+                Analyze Expression
+            </button>
+        </div>
+
+        <!-- Display area for the analysis result -->
+        <p id="resultDisplay" class="text-2xl font-semibold text-gray-700">Waiting for analysis...</p>
+    </div>
+
+    <script>
+        // Get references to DOM elements
+        const videoElement = document.getElementById('videoElement');
+        const startButton = document.getElementById('startButton');
+        const analyzeButton = document.getElementById('analyzeButton');
+        const resultDisplay = document.getElementById('resultDisplay');
+        const messageBox = document.getElementById('messageBox');
+
+        let stream = null; // To hold the webcam stream
+
+        /**
+         * Displays a message in the message box.
+         * @param {string} message - The message to display.
+         * @param {string} type - 'success', 'error', 'info'. (Currently only uses default styling)
+         */
+        function showMessage(message, type = 'info') {
+            messageBox.textContent = message;
+            messageBox.className = `message-box show`; // Reset classes and show
+            // You could add type-specific classes here for different colors
+            // e.g., if (type === 'error') messageBox.classList.add('bg-red-100');
+        }
+
+        /**
+         * Hides the message box.
+         */
+        function hideMessage() {
+            messageBox.classList.remove('show');
+            messageBox.textContent = '';
+        }
+
+        /**
+         * Starts the webcam and displays the stream in the video element.
+         */
+        async function startWebcam() {
+            hideMessage(); // Clear any previous messages
+            try {
+                // Request access to the user's video camera
+                stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                videoElement.srcObject = stream;
+                videoElement.play(); // Start playing the video stream
+                analyzeButton.disabled = false; // Enable analyze button once webcam is on
+                startButton.textContent = "Webcam On"; // Change button text
+                startButton.disabled = true; // Disable start button once started
+                showMessage("Webcam started successfully!", 'success');
+            } catch (err) {
+                console.error("Error accessing webcam: ", err);
+                resultDisplay.textContent = "Error: Could not access webcam.";
+                showMessage("Failed to start webcam. Please ensure camera access is granted and no other app is using it.", 'error');
+            }
+        }
+
+        /**
+         * Captures a frame from the video stream, converts it to base64,
+         * and sends it to the Python backend for analysis.
+         */
+        async function analyzeExpression() {
+            hideMessage(); // Clear any previous messages
+            if (!stream) {
+                showMessage("Webcam is not active. Please click 'Start Webcam' first.", 'error');
+                resultDisplay.textContent = "Error: Webcam not active.";
+                return;
+            }
+
+            // Create a temporary canvas element to draw the video frame
+            const canvas = document.createElement('canvas');
+            canvas.width = videoElement.videoWidth;
+            canvas.height = videoElement.videoHeight;
+            const context = canvas.getContext('2d');
+
+            // Draw the current video frame onto the canvas
+            context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+
+            // Get the image data as a base64 encoded JPEG string
+            const imageData = canvas.toDataURL('image/jpeg', 0.9); // 0.9 quality for JPEG
+
+            resultDisplay.textContent = "Analyzing..."; // Show loading state
+
+            try {
+                // Send the image data to the Flask backend
+                const response = await fetch('http://localhost:5000/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ imageData: imageData }),
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(`HTTP error! Status: ${response.status}, Message: ${errorData.error || response.statusText}`);
+                }
+
+                const data = await response.json();
+                console.log("Analysis result:", data);
+
+                if (data.face_detected) {
+                    resultDisplay.textContent = `Expression: ${data.expression}`;
+                    showMessage(`Analysis complete: ${data.expression}`, 'success');
+                } else {
+                    resultDisplay.textContent = `Result: ${data.expression}`; // Will be "No face detected"
+                    showMessage("No face detected in the frame. Please position your face clearly.", 'info');
+                }
+
+            } catch (error) {
+                console.error("Error during analysis:", error);
+                resultDisplay.textContent = "Analysis failed. See console for details.";
+                showMessage(`Error during analysis: ${error.message}. Make sure the Python server is running.`, 'error');
+            }
+        }
+
+        // Add event listeners to the buttons
+        startButton.addEventListener('click', startWebcam);
+        analyzeButton.addEventListener('click', analyzeExpression);
+
+        // Initial message to guide the user
+        window.onload = () => {
+            showMessage("Click 'Start Webcam' to begin.");
+        };
+    </script>
+</body>
+</html>
