@@ -1,24 +1,8 @@
 # Facial Expression Detector
 
+Author: Nasrul Muhaimin Mohd Zain
+
 This is a simple web application that uses your webcam to detect faces and provides a placeholder for facial expression analysis (e.g., Happy, Sad, Neutral). It consists of a Python Flask backend for image processing and an HTML/JavaScript frontend for the user interface.
-
-**Note:** For simplicity and to allow the frontend to run in environments like the Canvas preview, the facial expression analysis in the frontend is currently **simulated**. To use the actual Python backend for face detection, you must run the Flask server locally.
-
-## Table of Contents
-
-1. [Prerequisites](https://www.google.com/search?q=%231-prerequisites)
-
-2. [Project Setup](https://www.google.com/search?q=%232-project-setup)
-
-3. [VS Code Setup](https://www.google.com/search?q=%233-vs-code-setup)
-
-4. [Python Environment Setup](https://www.google.com/search?q=%234-python-environment-setup)
-
-5. [Running the Application](https://www.google.com/search?q=%235-running-the-application)
-
-6. [How to Use](https://www.google.com/search?q=%236-how-to-use)
-
-7. [Important Notes](https://www.google.com/search?q=%237-important-notes)
 
 ## 1. Prerequisites
 
@@ -195,43 +179,3 @@ This will load the `index.html` file served by your Flask backend.
 * **Expression Model (Placeholder):** The current Python backend uses a simple placeholder (random expression) for facial expression analysis. For real-world use, you would integrate a more advanced machine learning model (e.g., a deep learning model) to classify emotions from the detected face.
 
 * **Canvas Preview Simulation:** If you are viewing this `index.html` file within a sandboxed environment (like a code editor's live preview or an online canvas), the `Analyze Expression` button will **simulate** the result directly in JavaScript, as direct connections to `localhost` are usually blocked in such environments.
-
-
-
-
-
-can you write this raw text in the canvas?
-
-
-
-Show thinking
-
-
-
-
-
-
-
-
-
-Deep Research
-
-Canvas
-
-Image
-
-Gemini can make mistakes, so double-check it
-
-README.md - Facial Expression Detector Setup Guide
-
-
-Heading 1
-
-
-
-
-
-
-Create
-
-
