@@ -1,243 +1,105 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Facial Expression Detector</title>
-    <!-- Tailwind CSS CDN for styling -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        /* Custom styles for Inter font and general layout */
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f0f4f8; /* Light blue-gray background */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-        .container {
-            background-color: #ffffff;
-            border-radius: 1.5rem; /* More rounded corners */
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); /* Softer shadow */
-            padding: 2rem;
-            max-width: 500px; /* Max width for better control on larger screens */
-            width: 100%;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem; /* Spacing between sections */
-        }
-        video {
-            width: 100%; /* Make video responsive */
-            max-width: 400px; /* Limit max width as requested */
-            height: auto; /* Maintain aspect ratio */
-            border: 4px solid #3b82f6; /* Blue border */
-            border-radius: 1rem; /* Rounded video corners */
-            margin: 0 auto; /* Center the video */
-            background-color: #e2e8f0; /* Placeholder background for video */
-            display: block; /* Ensure it takes up its own line */
-        }
-        .button-group {
-            display: flex;
-            justify-content: center;
-            gap: 1rem; /* Space between buttons */
-            flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
-        }
-        button {
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.75rem; /* Rounded buttons */
-            font-weight: 600; /* Semi-bold text */
-            transition: all 0.2s ease-in-out;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Button shadow */
-        }
-        button:hover {
-            transform: translateY(-2px); /* Slight lift on hover */
-            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
-        }
-        button:active {
-            transform: translateY(0); /* Press effect */
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        #startButton {
-            background-color: #22c55e; /* Green for Start */
-            color: white;
-        }
-        #startButton:hover {
-            background-color: #16a34a; /* Darker green on hover */
-        }
-        #analyzeButton {
-            background-color: #3b82f6; /* Blue for Analyze */
-            color: white;
-        }
-        #analyzeButton:hover {
-            background-color: #2563eb; /* Darker blue on hover */
-        }
-        #resultDisplay {
-            margin-top: 1rem;
-            font-size: 1.5rem; /* Larger font for result */
-            font-weight: 700; /* Bold result text */
-            color: #1e293b; /* Darker text color */
-            min-height: 2rem; /* Ensure space even when empty */
-        }
-        .message-box {
-            background-color: #fff3cd; /* Light yellow background */
-            border: 1px solid #ffeeba; /* Yellow border */
-            color: #664d03; /* Dark yellow text */
-            padding: 1rem;
-            border-radius: 0.5rem;
-            margin-top: 1rem;
-            display: none; /* Hidden by default */
-            font-size: 0.9rem;
-        }
-        .message-box.show {
-            display: block;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1 class="text-3xl font-bold text-gray-800">Facial Expression Detector</h1>
+import os
+import cv2
+import numpy as np
+from flask import Flask, request, jsonify, render_template
+from flask_cors import CORS # Required for cross-origin requests if running frontend separately
+import base64
+import random # For placeholder expression
 
-        <!-- Video element to display webcam feed -->
-        <video id="videoElement" autoplay playsinline></video>
+app = Flask(__name__)
+CORS(app) # Enable CORS for all routes
 
-        <!-- Message box for user feedback -->
-        <div id="messageBox" class="message-box"></div>
+# Define the path to the Haar Cascade XML file
+# Ensure 'haarcascade_frontalface_default.xml' is in the same directory as app.py
+HAARCASCADE_PATH = os.path.join(os.path.dirname(__file__), 'haarcascade_frontalface_default.xml')
 
-        <div class="button-group">
-            <button id="startButton" class="focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                Start Webcam
-            </button>
-            <button id="analyzeButton" class="focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" disabled>
-                Analyze Expression
-            </button>
-        </div>
+# Load the Haar Cascade classifier for face detection
+try:
+    face_cascade = cv2.CascadeClassifier(HAARCASCADE_PATH)
+    if face_cascade.empty():
+        raise IOError(f"Could not load Haar Cascade classifier from {HAARCASCADE_PATH}")
+    print(f"Successfully loaded Haar Cascade classifier from {HAARCASCADE_PATH}")
+except IOError as e:
+    print(f"Error loading Haar Cascade: {e}")
+    print("Please ensure 'haarcascade_frontalface_default.xml' is in the same directory as 'app.py'")
+    face_cascade = None # Set to None to handle gracefully if loading fails
 
-        <!-- Display area for the analysis result -->
-        <p id="resultDisplay" class="text-2xl font-semibold text-gray-700">Waiting for analysis...</p>
-    </div>
+# --- Placeholder for Expression Detection Logic ---
+# In a real application, you would load a pre-trained deep learning model here
+# For example, using TensorFlow/Keras or a pre-trained OpenCV DNN model.
+#
+# Example (conceptual, requires model files):
+# emotion_model = cv2.dnn.readNetFromCaffe('deploy.prototxt', 'weights.caffemodel')
+# EMOTIONS = ["Angry", "Disgust", "Fear", "Happy", "Sad", "Surprise", "Neutral"]
+#
+def detect_expression_placeholder(face_roi):
+    """
+    Placeholder function for facial expression detection.
+    In a real application, this would use a machine learning model.
+    For this example, it returns a random expression.
+    """
+    expressions = ["Happy", "Sad", "Neutral", "Surprise", "Angry"]
+    return random.choice(expressions)
 
-    <script>
-        // Get references to DOM elements
-        const videoElement = document.getElementById('videoElement');
-        const startButton = document.getElementById('startButton');
-        const analyzeButton = document.getElementById('analyzeButton');
-        const resultDisplay = document.getElementById('resultDisplay');
-        const messageBox = document.getElementById('messageBox');
+# Route to serve the HTML page
+@app.route('/')
+def index():
+    """Serves the main HTML page."""
+    return render_template('index.html')
 
-        let stream = null; // To hold the webcam stream
+# Route to handle facial expression analysis
+@app.route('/analyze', methods=['POST'])
+def analyze_facial_expression():
+    """
+    Receives an image (base64 encoded), detects faces, and
+    returns a placeholder facial expression.
+    """
+    if not face_cascade:
+        return jsonify({"error": "Face detection model not loaded. Check server logs."}), 500
 
-        // Define possible expressions for the client-side simulation
-        const expressions = ["Happy", "Sad", "Neutral", "Surprise", "Angry"];
+    data = request.json
+    if 'imageData' not in data:
+        return jsonify({"error": "No imageData provided"}), 400
 
-        /**
-         * Displays a message in the message box.
-         * @param {string} message - The message to display.
-         * @param {string} type - 'success', 'error', 'info'. (Currently only uses default styling)
-         */
-        function showMessage(message, type = 'info') {
-            messageBox.textContent = message;
-            messageBox.className = `message-box show`; // Reset classes and show
-            // You could add type-specific classes here for different colors
-            // e.g., if (type === 'error') messageBox.classList.add('bg-red-100');
-        }
+    # Extract base64 string and remove the "data:image/jpeg;base64," prefix
+    base64_image = data['imageData'].split(',')[1]
 
-        /**
-         * Hides the message box.
-         */
-        function hideMessage() {
-            messageBox.classList.remove('show');
-            messageBox.textContent = '';
-        }
+    try:
+        # Decode base64 string to bytes
+        image_bytes = base64.b64decode(base64_image)
+        # Convert bytes to a NumPy array
+        np_arr = np.frombuffer(image_bytes, np.uint8)
+        # Decode NumPy array to OpenCV image
+        frame = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
 
-        /**
-         * Starts the webcam and displays the stream in the video element.
-         */
-        async function startWebcam() {
-            hideMessage(); // Clear any previous messages
-            try {
-                // Request access to the user's video camera
-                stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                videoElement.srcObject = stream;
-                videoElement.play(); // Start playing the video stream
-                analyzeButton.disabled = false; // Enable analyze button once webcam is on
-                startButton.textContent = "Webcam On"; // Change button text
-                startButton.disabled = true; // Disable start button once started
-                showMessage("Webcam started successfully!", 'success');
-            } catch (err) {
-                console.error("Error accessing webcam: ", err);
-                resultDisplay.textContent = "Error: Could not access webcam.";
-                showMessage("Failed to start webcam. Please ensure camera access is granted and no other app is using it.", 'error');
-            }
-        }
+        if frame is None:
+            return jsonify({"error": "Could not decode image"}), 400
 
-        /**
-         * Captures a frame from the video stream, and simulates analysis.
-         *
-         * IMPORTANT: For the Canvas preview environment, direct fetching to localhost
-         * is not possible. This function has been modified to simulate the analysis
-         * result on the client-side.
-         *
-         * To use the actual Python backend for analysis (which uses OpenCV for face
-         * detection and a placeholder for expression), you need to run the Flask
-         * server (`python app.py`) on your local machine and open this `index.html`
-         * file directly in your browser (e.g., by navigating to http://localhost:5000
-         * after starting the Flask server).
-         */
-        async function analyzeExpression() {
-            hideMessage(); // Clear any previous messages
-            if (!stream) {
-                showMessage("Webcam is not active. Please click 'Start Webcam' first.", 'error');
-                resultDisplay.textContent = "Error: Webcam not active.";
-                return;
-            }
+        # Convert to grayscale for face detection (Haar Cascades work better with grayscale)
+        gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-            resultDisplay.textContent = "Analyzing..."; // Show loading state
+        # Detect faces in the image
+        # Parameters: image, scaleFactor, minNeighbors, minSize
+        faces = face_cascade.detectMultiScale(gray_frame, 1.1, 4, minSize=(100, 100)) # Increased minSize for better detection
 
-            try {
-                // Simulate a delay for analysis
-                await new Promise(resolve => setTimeout(resolve, 1000)); // 1 second delay
+        if len(faces) > 0:
+            # For simplicity, we'll analyze the first detected face
+            (x, y, w, h) = faces[0]
+            face_roi = gray_frame[y:y+h, x:x+w] # Region of Interest for the face
 
-                // Simulate face detection (always true for this simulation)
-                const faceDetected = true;
+            # Call the placeholder expression detection
+            expression = detect_expression_placeholder(face_roi)
+            return jsonify({"expression": expression, "face_detected": True})
+        else:
+            return jsonify({"expression": "No face detected", "face_detected": False})
 
-                let expression;
-                if (faceDetected) {
-                    // Simulate expression detection by picking a random expression
-                    expression = expressions[Math.floor(Math.random() * expressions.length)];
-                } else {
-                    expression = "No face detected (simulated)";
-                }
+    except Exception as e:
+        print(f"Error during analysis: {e}")
+        return jsonify({"error": f"Internal server error: {str(e)}"}), 500
 
-                console.log("Simulated analysis result:", { expression, face_detected: faceDetected });
+if __name__ == '__main__':
+    # Run the Flask app
+    # host='0.0.0.0' makes it accessible from other devices on the network
+    # debug=True enables debug mode (reloads on code changes, shows errors)
+    app.run(host='0.0.0.0', port=5000, debug=True)
 
-                if (faceDetected) {
-                    resultDisplay.textContent = `Expression: ${expression}`;
-                    showMessage(`Analysis complete: ${expression}`, 'success');
-                } else {
-                    resultDisplay.textContent = `Result: ${expression}`;
-                    showMessage("No face detected in the frame. Please position your face clearly (simulated).", 'info');
-                }
-
-            } catch (error) {
-                console.error("Error during simulated analysis:", error);
-                resultDisplay.textContent = "Analysis failed. See console for details.";
-                showMessage(`Error during simulated analysis: ${error.message}.`, 'error');
-            }
-        }
-
-        // Add event listeners to the buttons
-        startButton.addEventListener('click', startWebcam);
-        analyzeButton.addEventListener('click', analyzeExpression);
-
-        // Initial message to guide the user
-        window.onload = () => {
-            showMessage("Click 'Start Webcam' to begin.");
-        };
-    </script>
-</body>
-</html>
