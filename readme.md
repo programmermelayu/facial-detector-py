@@ -1,4 +1,4 @@
-# Facial Expression Detector
+# Basic Facial Expression Detector v0.1
 
 Author: Nasrul Muhaimin Mohd Zain
 
